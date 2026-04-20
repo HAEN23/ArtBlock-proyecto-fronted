@@ -1,0 +1,290 @@
+/* Layout General */
+.pageContainer {
+  min-height: 100vh;
+  background-color: #fafafa;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: #111;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: transparent;
+  border-bottom: 1px solid #eee;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.navLinks {
+  display: flex;
+  gap: 30px;
+}
+
+.navLinks a {
+  text-decoration: none;
+  color: #888;
+  font-size: 0.85rem;
+  transition: color 0.2s;
+}
+
+.navLinks a.active,
+.navLinks a:hover {
+  color: #111;
+  font-weight: 500;
+}
+
+.authButtons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.signInBtn {
+  text-decoration: none;
+  color: #111;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.joinBtn {
+  text-decoration: none;
+  background-color: #111;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.joinBtn:hover {
+  background-color: #333;
+}
+
+.mainContent {
+  padding: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Hero Section */
+.heroSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 60px;
+  margin-top: 20px;
+}
+
+.collectionLabel {
+  font-size: 0.7rem;
+  color: #888;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.heroTitle {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -2px;
+  margin: 0 0 20px 0;
+}
+
+.heroSubtitle {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.heroStats {
+  display: flex;
+  gap: 40px;
+  text-align: center;
+}
+
+.stat h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+}
+
+.stat span {
+  font-size: 0.65rem;
+  color: #888;
+  letter-spacing: 1px;
+}
+
+/* Filtros */
+.filterSection {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #888;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filterBtn:hover {
+  color: #111;
+}
+
+.activeFilter {
+  background-color: #111;
+  color: #fff;
+}
+.activeFilter:hover {
+  color: #fff;
+}
+
+/* Grid Masonry con CSS */
+.gridSection {
+  width: 100%;
+}
+
+.masonry {
+  column-count: 3; /* 3 columnas en escritorio */
+  column-gap: 20px;
+}
+
+.artCard {
+  break-inside: avoid; /* Evita que la tarjeta se parta entre columnas */
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #eee;
+  margin-bottom: 12px;
+}
+
+.artImage {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.aiBadge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+}
+
+.artInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.artTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.artArtist {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 0;
+  font-style: italic;
+}
+
+.artTag {
+  font-size: 0.6rem;
+  color: #888;
+  border: 1px solid #ddd;
+  padding: 4px 8px;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
+}
+
+/* Load More */
+.loadMoreContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 60px;
+  padding-bottom: 60px;
+}
+
+.loadMoreBtn {
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #666;
+  padding: 15px 30px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.loadMoreBtn:hover {
+  border-color: #111;
+  color: #111;
+}
+
+/* Responsive básico */
+@media (max-width: 1024px) {
+  .masonry {
+    column-count: 2;
+  }
+  .heroTitle {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+  }
+  .heroSection {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+  }
+  .masonry {
+    column-count: 1;
+  }
+}
