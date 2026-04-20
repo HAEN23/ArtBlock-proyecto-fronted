@@ -1,0 +1,254 @@
+/* Layout General */
+.pageContainer {
+  min-height: 100vh;
+  background-color: #fafafa; /* Fondo ligeramente gris para que resalte la tarjeta blanca */
+  font-family: 'Inter', -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header Mockup */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background: transparent;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #111;
+  margin: 0;
+}
+
+.navLinks {
+  display: flex;
+  gap: 30px;
+}
+
+.navLinks a {
+  text-decoration: none;
+  color: #666;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.navLinks a:hover {
+  color: #111;
+}
+
+.headerIcons {
+  display: flex;
+  gap: 15px;
+}
+
+.iconCircle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #ddd;
+}
+
+/* Contenido Principal y Tarjeta */
+.mainContent {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.authCard {
+  background: #ffffff;
+  width: 100%;
+  max-width: 480px;
+  padding: 40px;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cardHeader {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.cardHeader h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.cardHeader p {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Toggle Iniciar Sesión / Registrarse */
+.toggleContainer {
+  display: flex;
+  background-color: #f0f0f0;
+  border-radius: 30px;
+  padding: 4px;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.toggleBtn {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  border-radius: 26px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggleBtn.active {
+  background: #ffffff;
+  color: #111;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Formulario */
+.form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputGroup label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #333;
+}
+
+.inputGroup input {
+  padding: 14px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.inputGroup input:focus {
+  border-color: #111;
+}
+
+/* Contenedor del input de contraseña con el ojo */
+.passwordWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordWrapper input {
+  width: 100%;
+  padding-right: 45px; /* Espacio para el icono */
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.eyeBtn:hover {
+  color: #333;
+}
+
+.eyeBtn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Botón Submit */
+.submitBtn {
+  margin-top: 10px;
+  background-color: #111;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submitBtn:hover {
+  background-color: #333;
+}
+
+.forgotPassword {
+  margin-top: 25px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #666;
+  text-decoration: none;
+}
+
+.forgotPassword:hover {
+  color: #111;
+}
+
+/* Caja de Seguridad */
+.securityBox {
+  margin-top: 40px;
+  background-color: #f8f8f8;
+  padding: 20px;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.securityHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: #111;
+}
+
+.securityHeader h4 {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.securityBox p {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #666;
+}
