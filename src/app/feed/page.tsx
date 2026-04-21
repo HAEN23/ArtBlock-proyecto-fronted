@@ -71,8 +71,7 @@ export default function FeedView() {
         <div className={styles.logo}>ArtBlock</div>
         <nav className={styles.navLinks}>
           <a href="#" className={styles.active}>Gallery</a>
-          <a href="#">Artists</a>
-          <a href="#">Archive</a>
+          <a href="./dashboard">My gallery</a>
         </nav>
         <div className={styles.authButtons}>
           <Link href="/login" className={styles.signInBtn}>Sign In</Link>

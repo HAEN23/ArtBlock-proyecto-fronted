@@ -27,11 +27,9 @@ export default function AuthView() {
     <div className={styles.pageContainer}>
       {/* Mockup del Header (Opcional si ya tienes un Navbar global) */}
       <header className={styles.header}>
-        <h1 className={styles.logo}>The Vault</h1>
+        <h1 className={styles.logo}>ArtBlock</h1>
         <nav className={styles.navLinks}>
-          <a href="#">Gallery</a>
-          <a href="#">Artists</a>
-          <a href="#">Archive</a>
+          <a href="./feed">Gallery</a>
         </nav>
         <div className={styles.headerIcons}>
           {/* Iconos simulados de cámara y campana */}
@@ -43,7 +41,7 @@ export default function AuthView() {
       <main className={styles.mainContent}>
         <div className={styles.authCard}>
           <div className={styles.cardHeader}>
-            <h2>ACCESS THE ARCHIVE</h2>
+            <h2>ACCESA A ARTBLOCK</h2>
             <p>Enter the private viewing room.</p>
           </div>
 
