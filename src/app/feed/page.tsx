@@ -1,5 +1,9 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
+// Si usas App Router, importa useRouter para la navegación
+import { useRouter } from 'next/navigation'; 
 import styles from './Feed.module.css';
 
 // Mock de datos para simular las obras de arte
@@ -63,15 +67,65 @@ const obrasMock = [
 ];
 
 export default function FeedView() {
+  const router = useRouter();
+  
+  // Estado para simular si el usuario está autenticado o no (cambia a true para probar si lo deja pasar)
+  const [isRegistered, setIsRegistered] = useState(false);
+  
+  // Estado para controlar la visibilidad del mensaje de error
+  const [showAlert, setShowAlert] = useState(false);
+
+  // Función que maneja el clic en "My gallery"
+  const handleMyGalleryClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Evita que el enlace recargue la página o salte
+    
+    if (!isRegistered) {
+      // Si no está registrado, mostramos la alerta y la ocultamos después de 3 segundos
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
+    } else {
+      // Si está registrado, lo mandamos al dashboard
+      router.push('/dashboard');
+    }
+  };
+
   return (
     <div className={styles.pageContainer}>
       
+      {/* MENSAJE DE ALERTA FLOTANTE (ESTILO ARTBLOCK) */}
+      {showAlert && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: '#111',
+          color: '#fff',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 1000,
+          fontSize: '0.9rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          animation: 'fadeInDown 0.3s ease-out'
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          Debes iniciar sesión para acceder al estudio del artista.
+        </div>
+      )}
+
       {/* HEADER */}
       <header className={styles.header}>
         <div className={styles.logo}>ArtBlock</div>
         <nav className={styles.navLinks}>
           <a href="#" className={styles.active}>Gallery</a>
-          <a href="./dashboard">My gallery</a>
+          {/* Cambiamos el enlace por nuestro manejador de eventos */}
+          <a href="#" onClick={handleMyGalleryClick} style={{ cursor: 'pointer' }}>My gallery</a>
         </nav>
         <div className={styles.authButtons}>
           <Link href="/login" className={styles.signInBtn}>Sign In</Link>
