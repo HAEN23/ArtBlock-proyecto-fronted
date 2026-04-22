@@ -12,14 +12,58 @@ export default function AuthView() {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState(''); // Solo para registro
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLogin) {
-      console.log('Iniciando sesión con:', { email, password });
-      // Lógica de login con Node.js aquí
-    } else {
-      console.log('Registrando artista:', { username, email, password });
-      // Lógica de registro aquí
+    
+    try {
+      if (isLogin) {
+        // ==========================================
+        // LÓGICA DE INICIO DE SESIÓN
+        // ==========================================
+        const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const datos = await respuesta.json();
+
+        if (datos.exito) {
+          // Guardamos el token en el navegador
+          localStorage.setItem('tokenArtBlock', datos.token);
+          alert('¡Inicio de sesión exitoso! Bienvenido a ArtBlock.');
+          
+          // Aquí puedes redirigir al usuario al feed automáticamente:
+          // window.location.href = '/feed';
+        } else {
+          alert('Error: ' + datos.mensaje);
+        }
+
+      } else {
+        // ==========================================
+        // LÓGICA DE REGISTRO
+        // ==========================================
+        const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/registro`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          // Fíjate que enviamos "nombre_usuario" porque así lo espera tu backend en Prisma
+          body: JSON.stringify({ nombre_usuario: username, email, password })
+        });
+        
+        const datos = await respuesta.json();
+
+        if (datos.exito) {
+          alert('¡Cuenta creada exitosamente! Ahora por favor inicia sesión.');
+          // Limpiamos la contraseña y cambiamos a la pestaña de Login
+          setPassword('');
+          setIsLogin(true);
+        } else {
+          alert('Error: ' + datos.mensaje);
+        }
+      }
+    } catch (error) {
+      console.error('Error de conexión:', error);
+      alert('Error al conectar con el servidor. Verifica que tu backend esté encendido.');
     }
   };
 
