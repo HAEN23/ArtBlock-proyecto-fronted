@@ -1,78 +1,101 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link'; // Importante para la redirección de "Colecciones"
+import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import styles from './Dashboard.module.css';
 
-// Mock de datos iniciales
-const initialArtworks = [
-  {
-    id: 1,
-    title: 'Sombras del Éter I',
-    collection: 'COLECCIÓN: SILENCIO DIGITAL',
-    edition: 'ED. 1/5',
-    status: 'PROTEGIDO',
-    imgUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop',
-  },
-  {
-    id: 2,
-    title: 'Geometría del Vacío',
-    collection: 'COLECCIÓN: ARCHIVO 01',
-    edition: 'ÚNICA',
-    status: 'VENDIDO',
-    imgUrl: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=800&auto=format&fit=crop',
-  },
-  {
-    id: 3,
-    title: 'Morfología Urbana',
-    collection: 'COLECCIÓN: CIUDAD MUERTA',
-    edition: 'ED. 10/10',
-    status: 'EN REVISIÓN',
-    imgUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop',
-  },
-  {
-    id: 4,
-    title: 'Textura Mineral IV',
-    collection: 'COLECCIÓN: ELEMENTOS',
-    edition: 'PIEZA ÚNICA',
-    status: '',
-    imgUrl: 'https://images.unsplash.com/photo-1574169208507-84376144848b?q=80&w=800&auto=format&fit=crop',
-  }
-];
-
 export default function DashboardView() {
-  const [artworks, setArtworks] = useState(initialArtworks);
+  // 1. Iniciamos la galería vacía (sin relleno)
+  const [artworks, setArtworks] = useState<any[]>([]);
   
   // Estados para los modales
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   
-  // Estado para el nombre del artista (simulado)
+  // Estados del usuario real
   const [artistName, setArtistName] = useState("Artista Anónimo");
+  const [artistEmail, setArtistEmail] = useState("");
 
-  // Función para simular eliminar una obra
-  const handleDelete = (id: number) => {
-    const updatedArtworks = artworks.filter(art => art.id !== id);
-    setArtworks(updatedArtworks);
+  // Estados para el formulario de subida real
+  const [tituloObra, setTituloObra] = useState("");
+  const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
+  
+  // Referencia para abrir el explorador de archivos al dar clic en la caja
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 2. Función que va a la base de datos a buscar tus obras guardadas
+  const cargarMisObras = async () => {
+    const token = localStorage.getItem('tokenArtBlock');
+    if (!token) return;
+
+    try {
+      const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/obras/mias`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const datos = await respuesta.json();
+      
+      if (datos.exito) {
+        setArtworks(datos.obras); // Llenamos la galería con la base de datos
+      }
+    } catch (error) {
+      console.error("Error cargando obras:", error);
+    }
   };
 
-  // Función para simular la subida (cierra el modal)
-  const handleUpload = (e: React.FormEvent) => {
+  useEffect(() => {
+    const storedName = localStorage.getItem('nombreArtBlock');
+    const storedEmail = localStorage.getItem('emailArtBlock');
+
+    if (storedName) setArtistName(storedName);
+    if (storedEmail) setArtistEmail(storedEmail);
+
+    // Cargamos las obras al entrar a la página
+    cargarMisObras();
+  }, []);
+
+  // 3. Función real para subir la obra usando FormData y tu Backend
+  const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsModalOpen(false);
-    alert("¡Obra subida exitosamente a ArtBlock!");
+    if (!archivoImagen) return alert("Por favor selecciona una imagen de tu equipo.");
+
+    const token = localStorage.getItem('tokenArtBlock');
+    const formData = new FormData();
+    formData.append('titulo', tituloObra);
+    formData.append('imagen', archivoImagen);
+
+    try {
+      const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/obras/subir`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+
+      const datos = await respuesta.json();
+
+      if (datos.exito) {
+        alert("¡Obra protegida y subida exitosamente a ArtBlock!");
+        setIsModalOpen(false);
+        setTituloObra("");
+        setArchivoImagen(null);
+        cargarMisObras(); // Recargamos la galería para ver la nueva obra de inmediato
+      } else {
+        alert("Error: " + datos.mensaje);
+      }
+    } catch (error) {
+      alert("Error al conectar con el servidor.");
+    }
   };
 
-  // Función para guardar los cambios del perfil
   const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault();
+    localStorage.setItem('nombreArtBlock', artistName);
+    localStorage.setItem('emailArtBlock', artistEmail);
     setIsProfileModalOpen(false);
     alert("¡Perfil actualizado correctamente!");
   };
 
   return (
     <div className={styles.dashboardLayout}>
-      
       {/* SIDEBAR */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarTop}>
@@ -87,36 +110,21 @@ export default function DashboardView() {
               Panel del Artista
             </a>
             
-            {/* Redirección al Feed Principal. Cambia "/gallery" por "/" si tu feed está en la página principal */}
             <Link href="/feed" className={styles.navLink}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-              Colecciones
+              Colecciones Públicas
             </Link>
             
-            {/* Botón para abrir modal de Edición de Perfil */}
             <button className={styles.navButton} onClick={() => setIsProfileModalOpen(true)}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
               Editar Perfil
             </button>
           </nav>
         </div>
-
-        <div className={styles.sidebarBottom}>
-          <a href="#">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-            Soporte
-          </a>
-          <a href="#">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            Archivo Histórico
-          </a>
-        </div>
       </aside>
 
       {/* MAIN CONTENT */}
       <main className={styles.mainContent}>
-        
-        {/* Header */}
         <header className={styles.header}>
           <div>
             <h1 className={styles.pageTitle}>Galería de {artistName}</h1>
@@ -128,68 +136,48 @@ export default function DashboardView() {
           </button>
         </header>
 
-        {/* Stats Row */}
         <section className={styles.statsRow}>
           <div className={styles.statCard}>
             <span className={styles.statLabel}>TOTAL DE OBRAS</span>
             <div className={styles.statValue}>
-              <h2>{artworks.length}</h2><span>/100</span>
-            </div>
-          </div>
-          <div className={styles.statCard}>
-            <span className={styles.statLabel}>VISUALIZACIONES GLOBALES</span>
-            <div className={styles.statValue}>
-              <h2>12.4K</h2><span className={styles.positive}>+12%</span>
+              <h2>{artworks.length}</h2>
             </div>
           </div>
           <div className={`${styles.statCard} ${styles.statDark}`}>
             <span className={styles.statLabelDark}>ESTADO DE PROTECCIÓN</span>
             <h3 className={styles.statTitleDark}>Blindaje Criptográfico<br/>Activo</h3>
-            <div className={styles.statFooterDark}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-              Inmune a Scrapers de AI
-            </div>
           </div>
         </section>
 
-        {/* Grid de Obras */}
+        {/* Grid de Obras Reales */}
         <section className={styles.artGrid}>
-          {/* Botón Añadir Pieza */}
           <button className={styles.addPieceCard} onClick={() => setIsModalOpen(true)}>
             <div className={styles.addIcon}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
             </div>
             <h4>AÑADIR PIEZA</h4>
-            <p>Formatos soportados: RAW, TIFF, PNG.<br/>Máximo 100MB.</p>
+            <p>Formatos soportados: JPG, PNG.<br/>Se abrirá el explorador de archivos.</p>
           </button>
 
-          {/* Tarjetas de Obras */}
+          {/* Mapeo dinámico de la base de datos */}
           {artworks.map((obra) => (
             <div key={obra.id} className={styles.artCard}>
               <div className={styles.imageWrapper}>
-                {obra.status && <div className={styles.badge}>{obra.status}</div>}
-                <button 
-                  className={styles.deleteBtn} 
-                  onClick={() => handleDelete(obra.id)}
-                  title="Eliminar obra"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
-                <img src={obra.imgUrl} alt={obra.title} className={styles.artImage} />
+                <img src={obra.imagen_url} alt={obra.titulo} className={styles.artImage} />
               </div>
               <div className={styles.artInfo}>
                 <div className={styles.infoTop}>
-                  <h4>{obra.title}</h4>
-                  <span className={styles.edition}>{obra.edition}</span>
+                  <h4>{obra.titulo}</h4>
+                  <span className={styles.edition}>ÚNICA</span>
                 </div>
-                <p className={styles.collection}>{obra.collection}</p>
+                <p className={styles.collection}>Protegida en ArtBlock</p>
               </div>
             </div>
           ))}
         </section>
       </main>
 
-      {/* MODAL PARA SUBIR OBRA */}
+      {/* MODAL PARA SUBIR OBRA (Con input File real) */}
       {isModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
@@ -201,17 +189,38 @@ export default function DashboardView() {
             </div>
             
             <form onSubmit={handleUpload} className={styles.uploadForm}>
-              <div className={styles.dropZone}>
+              {/* Esta es la zona clickeable que abre el explorador */}
+              <div 
+                className={styles.dropZone} 
+                onClick={() => fileInputRef.current?.click()} 
+                style={{ cursor: 'pointer', border: archivoImagen ? '2px solid #000' : '' }}
+              >
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                <p>Arrastra tu archivo aquí o <strong>selecciona desde tu equipo</strong></p>
+                <p>
+                  {archivoImagen 
+                    ? `Seleccionado: ${archivoImagen.name}` 
+                    : <>Haz clic aquí para <strong>seleccionar un archivo</strong> de tu equipo</>
+                  }
+                </p>
+                {/* Input oculto real */}
+                <input 
+                  type="file" 
+                  accept="image/png, image/jpeg" 
+                  ref={fileInputRef} 
+                  style={{ display: 'none' }} 
+                  onChange={(e) => setArchivoImagen(e.target.files?.[0] || null)}
+                />
               </div>
+
               <div className={styles.inputGroup}>
                 <label>TÍTULO DE LA OBRA</label>
-                <input type="text" placeholder="Ej. Ecos del Mañana" required />
-              </div>
-              <div className={styles.inputGroup}>
-                <label>COLECCIÓN</label>
-                <input type="text" placeholder="Ej. Archivo 02" />
+                <input 
+                  type="text" 
+                  value={tituloObra} 
+                  onChange={(e) => setTituloObra(e.target.value)} 
+                  placeholder="Ej. Ecos del Mañana" 
+                  required 
+                />
               </div>
               <button type="submit" className={styles.btnPrimaryFull}>Proteger y Subir a ArtBlock</button>
             </form>
@@ -223,7 +232,7 @@ export default function DashboardView() {
       {isProfileModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
+             <div className={styles.modalHeader}>
               <h2>Editar Perfil de Usuario</h2>
               <button className={styles.closeBtn} onClick={() => setIsProfileModalOpen(false)}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -237,20 +246,14 @@ export default function DashboardView() {
                   type="text" 
                   value={artistName}
                   onChange={(e) => setArtistName(e.target.value)}
-                  placeholder="Tu nombre público" 
                   required 
                 />
-              </div>
-              <div className={styles.inputGroup}>
-                <label>CORREO ELECTRÓNICO</label>
-                <input type="email" defaultValue="archive@artblock.art" required />
               </div>
               <button type="submit" className={styles.btnPrimaryFull}>Guardar Cambios</button>
             </form>
           </div>
         </div>
       )}
-
     </div>
   );
 }

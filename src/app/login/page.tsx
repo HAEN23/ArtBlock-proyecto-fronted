@@ -29,34 +29,51 @@ export default function AuthView() {
         const datos = await respuesta.json();
 
         if (datos.exito) {
-          // Guardamos el token en el navegador
+          // 1. Guardamos el token y el correo en el navegador
           localStorage.setItem('tokenArtBlock', datos.token);
-          alert('¡Inicio de sesión exitoso! Bienvenido a ArtBlock.');
+          localStorage.setItem('emailArtBlock', email);
           
-          // Aquí puedes redirigir al usuario al feed automáticamente:
-          // window.location.href = '/feed';
+          // 2. Redirigimos al dashboard automáticamente
+          window.location.href = '/dashboard';
         } else {
           alert('Error: ' + datos.mensaje);
         }
 
       } else {
         // ==========================================
-        // LÓGICA DE REGISTRO
+        // LÓGICA DE REGISTRO CON AUTO-LOGIN
         // ==========================================
         const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/registro`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          // Fíjate que enviamos "nombre_usuario" porque así lo espera tu backend en Prisma
           body: JSON.stringify({ nombre_usuario: username, email, password })
         });
         
         const datos = await respuesta.json();
 
         if (datos.exito) {
-          alert('¡Cuenta creada exitosamente! Ahora por favor inicia sesión.');
-          // Limpiamos la contraseña y cambiamos a la pestaña de Login
-          setPassword('');
-          setIsLogin(true);
+          // ¡Truco!: Iniciamos sesión por el usuario inmediatamente después de registrarse
+          const resLogin = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          const dataLogin = await resLogin.json();
+
+          if (dataLogin.exito) {
+            // 1. Guardamos todo en la memoria del navegador
+            localStorage.setItem('tokenArtBlock', dataLogin.token);
+            localStorage.setItem('nombreArtBlock', username); 
+            localStorage.setItem('emailArtBlock', email);
+            
+            // 2. ¡Redirigimos al dashboard ya logueados!
+            window.location.href = '/dashboard';
+          } else {
+            // Por si acaso el auto-login falla
+            alert('Cuenta creada exitosamente. Por favor inicia sesión.');
+            setPassword('');
+            setIsLogin(true);
+          }
         } else {
           alert('Error: ' + datos.mensaje);
         }
@@ -69,14 +86,12 @@ export default function AuthView() {
 
   return (
     <div className={styles.pageContainer}>
-      {/* Mockup del Header (Opcional si ya tienes un Navbar global) */}
       <header className={styles.header}>
         <h1 className={styles.logo}>ArtBlock</h1>
         <nav className={styles.navLinks}>
           <a href="./feed">Gallery</a>
         </nav>
         <div className={styles.headerIcons}>
-          {/* Iconos simulados de cámara y campana */}
           <div className={styles.iconCircle}></div>
           <div className={styles.iconCircle}></div>
         </div>
@@ -89,7 +104,6 @@ export default function AuthView() {
             <p>Enter the private viewing room.</p>
           </div>
 
-          {/* Toggle Iniciar Sesión / Registrarse */}
           <div className={styles.toggleContainer}>
             <button
               type="button"
@@ -108,7 +122,6 @@ export default function AuthView() {
           </div>
 
           <form onSubmit={handleSubmit} className={styles.form}>
-            {/* Campo extra si es Registro */}
             {!isLogin && (
               <div className={styles.inputGroup}>
                 <label htmlFor="username">NOMBRE DE ARTISTA</label>
@@ -146,7 +159,6 @@ export default function AuthView() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-                {/* Botón del Ojo para mostrar/ocultar contraseña */}
                 <button
                   type="button"
                   className={styles.eyeBtn}
@@ -179,7 +191,6 @@ export default function AuthView() {
             </a>
           )}
 
-          {/* Caja de Información de Seguridad */}
           <div className={styles.securityBox}>
             <div className={styles.securityHeader}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
