@@ -1,27 +1,33 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation'; 
+// 1. Aquí recuperamos la importación de los estilos
 import styles from './Feed.module.css';
+
+// 2. Importamos tus nuevas piezas de LEGO
+import Navbar from '@/components/layout/Navbar';
+import HeroBanner from '@/components/ui/HeroBanner';
+import ArtCard from '@/components/ui/ArtCard';
 
 export default function FeedView() {
   const router = useRouter();
   
-  // Estados de Sesión
+  // ==========================================
+  // LÓGICA DE SESIÓN
+  // ==========================================
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [nombreArtista, setNombreArtista] = useState("");
   const [showAlert, setShowAlert] = useState(false);
 
   // ==========================================
-  // ESTADOS DEL FEED Y PAGINACIÓN
+  // LÓGICA DEL FEED (Aquí recuperamos obrasPublicas)
   // ==========================================
   const [obrasPublicas, setObrasPublicas] = useState<any[]>([]);
   const [pagina, setPagina] = useState(1);
   const [hayMasObras, setHayMasObras] = useState(false);
   const [cargando, setCargando] = useState(true);
 
-  // Verificamos sesión al inicio
   useEffect(() => {
     const token = localStorage.getItem('tokenArtBlock');
     const nombre = localStorage.getItem('nombreArtBlock');
@@ -29,12 +35,9 @@ export default function FeedView() {
       setIsLoggedIn(true);
       if (nombre) setNombreArtista(nombre);
     }
-    
-    // Al entrar, cargamos la página 1 del Feed
     cargarObras(1, true);
   }, []);
 
-  // Función para ir al backend por obras
   const cargarObras = async (numeroPagina: number, esPrimeraCarga = false) => {
     try {
       setCargando(true);
@@ -43,10 +46,8 @@ export default function FeedView() {
 
       if (datos.exito) {
         if (esPrimeraCarga) {
-          // Si es la primera vez, reemplazamos todo
           setObrasPublicas(datos.obras);
         } else {
-          // Si dimos clic al botón, las pegamos al final de las que ya teníamos
           setObrasPublicas((prev) => [...prev, ...datos.obras]);
         }
         setHayMasObras(datos.tieneMas);
@@ -58,7 +59,6 @@ export default function FeedView() {
     }
   };
 
-  // Acción del botón "Cargar Más"
   const handleCargarMas = () => {
     const siguientePagina = pagina + 1;
     setPagina(siguientePagina);
@@ -85,6 +85,7 @@ export default function FeedView() {
   return (
     <div className={styles.pageContainer}>
       
+      {/* ALERTA DE INICIO DE SESIÓN */}
       {showAlert && (
         <div style={{
           position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',
@@ -100,55 +101,22 @@ export default function FeedView() {
         </div>
       )}
 
-      <header className={styles.header}>
-        <div className={styles.logo}>ArtBlock</div>
-        <nav className={styles.navLinks}>
-          <a href="#" className={styles.active}>Gallery</a>
-          <a href="#" onClick={handleMyGalleryClick} style={{ cursor: 'pointer' }}>My gallery</a>
-        </nav>
-        
-        <div className={styles.authButtons}>
-          {isLoggedIn ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <span style={{ fontSize: '0.9rem', color: '#666', fontWeight: '500' }}>
-                Conectado como <strong style={{ color: '#000' }}>{nombreArtista || 'Artista'}</strong>
-              </span>
-              <Link href="/dashboard" className={styles.joinBtn}>Mi Panel</Link>
-              <button onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: '0.8rem', textDecoration: 'underline' }}>
-                Salir
-              </button>
-            </div>
-          ) : (
-            <>
-              <Link href="/login" className={styles.signInBtn}>Sign In</Link>
-              <Link href="/login" className={styles.joinBtn}>Join ArtBlock</Link>
-            </>
-          )}
-        </div>
-      </header>
+      {/* 3. USAMOS EL COMPONENTE NAVBAR */}
+      <Navbar 
+        styles={styles} 
+        isLoggedIn={isLoggedIn} 
+        nombreArtista={nombreArtista}
+        onMyGalleryClick={handleMyGalleryClick}
+        onLogout={handleLogout}
+      />
 
       <main className={styles.mainContent}>
-        <section className={styles.heroSection}>
-          <div className={styles.heroText}>
-            <span className={styles.collectionLabel}>ARCHIVE COLLECTION // 2026</span>
-            <h1 className={styles.heroTitle}>Curated Vision.<br/>Protected Heritage.</h1>
-            <p className={styles.heroSubtitle}>
-              A secure haven for the world's most evocative digital artistry.<br/>
-              Every piece in ArtBlock is cryptographically secured and<br/>
-              verified for provenance.
-            </p>
-          </div>
-          <div className={styles.heroStats}>
-            <div className={styles.stat}>
-              <h2>{obrasPublicas.length > 0 ? '+100' : '0'}</h2>
-              <span>ARTWORKS</span>
-            </div>
-            <div className={styles.stat}>
-              <h2>Global</h2>
-              <span>ARCHIVE</span>
-            </div>
-          </div>
-        </section>
+        
+        {/* 4. USAMOS EL COMPONENTE HEROBANNER */}
+        <HeroBanner 
+          styles={styles} 
+          cantidadObras={obrasPublicas.length} 
+        />
 
         <section className={styles.filterSection}>
           <button className={`${styles.filterBtn} ${styles.activeFilter}`}>ALL WORKS</button>
@@ -156,7 +124,6 @@ export default function FeedView() {
           <button className={styles.filterBtn}>BRUTALISM</button>
         </section>
 
-        {/* GRID REAL CONECTADO A BASE DE DATOS */}
         <section className={styles.gridSection}>
           <div className={styles.masonry}>
             {obrasPublicas.length === 0 && !cargando ? (
@@ -164,35 +131,18 @@ export default function FeedView() {
                 Aún no hay obras protegidas en The Vault. ¡Sé el primero en subir una!
               </div>
             ) : (
-              obrasPublicas.map((obra) => (
-                <div key={obra.id} className={styles.artCard}>
-                  <div className={styles.imageWrapper}>
-                    <div className={styles.aiBadge}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                      </svg>
-                      AI-PROTECTED
-                    </div>
-                    <img src={obra.imagen_url} alt={obra.titulo} className={styles.artImage} />
-                  </div>
-                  
-                  <div className={styles.artInfo}>
-                    <div className={styles.artMeta}>
-                      <h3 className={styles.artTitle}>{obra.titulo}</h3>
-                      {/* ¡AQUÍ ESTÁ EL CAMBIO MÁGICO! Muestra el nombre real o un respaldo si llega a fallar */}
-                      <p className={styles.artArtist}>
-                        {obra.artista?.nombre_usuario || "Artista de The Vault"}, 2026
-                      </p>
-                    </div>
-                    <span className={styles.artTag}>ARTBLOCK SECURED</span>
-                  </div>
-                </div>
+              // 5. USAMOS EL COMPONENTE ARTCARD (y le decimos a TypeScript que 'obra' es 'any')
+              obrasPublicas.map((obra: any) => (
+                <ArtCard 
+                  key={obra.id} 
+                  obra={obra} 
+                  styles={styles} 
+                />
               ))
             )}
           </div>
         </section>
 
-        {/* BOTÓN MÁGICO DE CARGAR MÁS */}
         {hayMasObras && (
           <div className={styles.loadMoreContainer}>
             <button 

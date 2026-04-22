@@ -4,6 +4,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import styles from './Dashboard.module.css';
 
+// 1. IMPORTAMOS TUS PIEZAS DE LEGO
+import Sidebar from '@/components/layout/Sidebar';
+import ArtCard from '@/components/ui/ArtCard';
+import ManageModal from '@/components/modals/ManageModal';
+
 export default function DashboardView() {
   const [artworks, setArtworks] = useState<any[]>([]);
   
@@ -11,7 +16,6 @@ export default function DashboardView() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   
   const [obraSeleccionada, setObraSeleccionada] = useState<any>(null);
-  const [nuevoTituloObra, setNuevoTituloObra] = useState("");
   
   const [artistName, setArtistName] = useState("Artista Anónimo");
   const [artistEmail, setArtistEmail] = useState("");
@@ -32,7 +36,6 @@ export default function DashboardView() {
       const datos = await respuesta.json();
       
       if (datos.exito) {
-        // BLINDAJE 1: Nos aseguramos de que lo que llega es realmente un arreglo (lista) válido
         if (Array.isArray(datos.obras)) {
           setArtworks(datos.obras);
         } else {
@@ -108,14 +111,13 @@ export default function DashboardView() {
   };
 
   const abrirGestionObra = (obra: any) => {
-    if (!obra) return; // BLINDAJE 2: Si la obra es nula, no hacemos nada
+    if (!obra) return; 
     setObraSeleccionada(obra);
-    setNuevoTituloObra(obra.titulo || ""); 
   };
 
-  const handleEditarObra = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!obraSeleccionada || !obraSeleccionada.id) return; // BLINDAJE 3
+  // Ajustado para recibir el "nuevoTitulo" desde el componente ManageModal
+  const handleEditarObra = async (nuevoTitulo: string) => {
+    if (!obraSeleccionada || !obraSeleccionada.id) return; 
 
     const token = localStorage.getItem('tokenArtBlock');
     
@@ -126,7 +128,7 @@ export default function DashboardView() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ titulo: nuevoTituloObra })
+        body: JSON.stringify({ titulo: nuevoTitulo }) // Usamos el parámetro que nos manda el modal
       });
       
       const datos = await respuesta.json();
@@ -143,7 +145,7 @@ export default function DashboardView() {
   };
 
   const handleEliminarObra = async () => {
-    if (!obraSeleccionada || !obraSeleccionada.id) return; // BLINDAJE 4
+    if (!obraSeleccionada || !obraSeleccionada.id) return; 
 
     const confirmar = window.confirm(`¿Estás seguro de que deseas eliminar permanentemente "${obraSeleccionada.titulo}"? Esta acción no se puede deshacer.`);
     if (!confirmar) return;
@@ -170,28 +172,12 @@ export default function DashboardView() {
 
   return (
     <div className={styles.dashboardLayout}>
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarTop}>
-          <div className={styles.brand}>
-            <h2>ARTBLOCK</h2>
-            <span>ESTUDIO DE ARTISTA</span>
-          </div>
-          <nav className={styles.sideNav}>
-            <a href="#" className={styles.active}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-              Panel del Artista
-            </a>
-            <Link href="/feed" className={styles.navLink}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-              Colecciones Públicas
-            </Link>
-            <button className={styles.navButton} onClick={() => setIsProfileModalOpen(true)}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-              Editar Perfil
-            </button>
-          </nav>
-        </div>
-      </aside>
+      
+      {/* 2. USAMOS EL COMPONENTE SIDEBAR */}
+      <Sidebar 
+        styles={styles} 
+        onEditProfileClick={() => setIsProfileModalOpen(true)} 
+      />
 
       <main className={styles.mainContent}>
         <header className={styles.header}>
@@ -227,35 +213,23 @@ export default function DashboardView() {
             <p>Formatos soportados: JPG, PNG.</p>
           </button>
 
-          {artworks.map((obra, index) => {
-            // BLINDAJE 5: Si por alguna razón la base de datos nos manda un objeto corrupto, lo saltamos visualmente
+          {artworks.map((obra) => {
             if (!obra || !obra.id) return null;
 
             return (
-              <div 
+              // 3. USAMOS EL COMPONENTE ARTCARD
+              <ArtCard 
                 key={obra.id} 
-                className={styles.artCard} 
-                onClick={() => abrirGestionObra(obra)}
-                style={{ cursor: 'pointer' }}
-                title="Haz clic para editar o eliminar"
-              >
-                <div className={styles.imageWrapper}>
-                  <img src={obra.imagen_url} alt={obra.titulo || "Obra sin título"} className={styles.artImage} />
-                </div>
-                <div className={styles.artInfo}>
-                  <div className={styles.infoTop}>
-                    <h4>{obra.titulo || "Sin título"}</h4>
-                    <span className={styles.edition}>ÚNICA</span>
-                  </div>
-                  <p className={styles.collection}>Protegida en ArtBlock</p>
-                </div>
-              </div>
+                obra={obra} 
+                styles={styles} 
+                onClick={() => abrirGestionObra(obra)} 
+              />
             );
           })}
         </section>
       </main>
 
-      {/* MODAL PARA SUBIR OBRA */}
+      {/* MODAL PARA SUBIR OBRA (Lo mantenemos aquí por el manejo de archivos) */}
       {isModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
@@ -291,49 +265,15 @@ export default function DashboardView() {
         </div>
       )}
 
-      {/* MODAL DE GESTIÓN (EDITAR / ELIMINAR) */}
+      {/* 4. USAMOS EL COMPONENTE MANAGEMODAL */}
       {obraSeleccionada && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-             <div className={styles.modalHeader}>
-              <h2>Gestionar Obra</h2>
-              <button className={styles.closeBtn} onClick={() => setObraSeleccionada(null)}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </button>
-            </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ width: '100%', height: '200px', borderRadius: '8px', overflow: 'hidden' }}>
-                <img src={obraSeleccionada?.imagen_url} alt="Obra" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-
-              <form onSubmit={handleEditarObra} className={styles.uploadForm} style={{ gap: '15px' }}>
-                <div className={styles.inputGroup}>
-                  <label>TÍTULO DE LA OBRA</label>
-                  <input 
-                    type="text" 
-                    value={nuevoTituloObra}
-                    onChange={(e) => setNuevoTituloObra(e.target.value)}
-                    required 
-                  />
-                </div>
-                
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button type="submit" className={styles.btnPrimaryFull} style={{ flex: 2 }}>
-                    Guardar Cambios
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={handleEliminarObra}
-                    style={{ flex: 1, backgroundColor: '#ff4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-                  >
-                    Eliminar Obra
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
+        <ManageModal 
+          styles={styles}
+          obra={obraSeleccionada}
+          onClose={() => setObraSeleccionada(null)}
+          onGuardar={handleEditarObra}
+          onEliminar={handleEliminarObra}
+        />
       )}
 
       {/* MODAL PARA EDITAR PERFIL */}
